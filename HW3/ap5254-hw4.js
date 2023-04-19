@@ -1,5 +1,5 @@
 //Command line codes, run these in order to run the script, the first5 just imports the files, the next 2 open up mongo shell and the database, and the last one rund this script, change paths as needed
-//mongoimport "C:\Users\poona\Downloads\restaurants.json" -d apbd5254 -c restaurants
+//mongoimport "C:\Users\poona\Downloads\restaurants.json" -d apbd5254 -c restaurants --jsonArray
 //mongoimport "C:\Users\poona\Downloads\durham-nc-foreclosure-2006-2016.json" -d apbd5254 -c foreclosures --jsonArray
 //I had to edit the dataset below as it was semicolon seperated, which isn't an allowed seperator in Mong, so I used Notepad++ to and just replaced every semicolon with a comma
 //mongoimport "C:\Users\poona\Downloads\Restaurants_in_Durham_County_NC_comma.csv" -d apbd5254 -c durham --type csv --headerline
@@ -28,15 +28,25 @@ db.restaurants.find({borough: 'Bronx'}).limit(5)
 //Question 8
 db.restaurants.find({borough: 'Bronx'}).skip(5).limit(5)
 //Question 9
-db.restaurants.aggregate([{$match: {"grades.score" : {$gt: 85} } }])
-//Question 10
+db.restaurants.find({grades : { $elemMatch:{"score":{$gt : 85}}}})
+//Question 10, I was going to make a set of documetns where they  all have atleast 1 grade less than 80 and subtract than from the set of all documents and then take taht set and get another set from it where all documetns have atleast 1 grade above 100 and subtract that from the previous set
+//But when I took the set of documetns with atleast 1 grade less than 80, it ended up being all documents, so tehre wouldn't be anything here
+var x = db.restaurants.find({grades : { $elemMatch:{"score":{$lt : 80}}}})
+x.count()
+//Just in case the corrections are wrongly worded, the line below gets all of the documents that have a value between 80 and 100
 db.restaurants.aggregate([{$match: {"grades.score" : {$gt:80, $lt:100} } }])
-//Question 11
-db.restaurants.aggregate([{$match: {"address.coord.0" : {$lt:-95.754168} } }])
+//Question 11, with the corrections asked for, it has no results
+db.restaurants.aggregate([{$match: {"address.coord.1" : {$lte:-73.9} } }])
+//I did this one just in case the coordinates were mixed up on brightspace, I know Mongo prefers tehm switched as well
+db.restaurants.aggregate([{$match: {"address.coord.0" : {$lte:-73.9} } }])
 //Question 12, American has a space behind it in the data for some reason
+db.restaurants.aggregate([{$match: {"address.coord.1" : {$lt:-65.754168},"cuisine" : {$ne: "American "}, "grades.score" : {$gt: 70} } }])
+//Same as previous questiosn reasoning
 db.restaurants.aggregate([{$match: {"address.coord.0" : {$lt:-65.754168},"cuisine" : {$ne: "American "}, "grades.score" : {$gt: 70} } }])
 //Question 13, Can't find any for the specified criteria
 db.restaurants.find({"address.coord.1": {$lt:-65.754168},"cuisine" : {$ne: "American "},"grades.score" : {$gt: 70}},{"restaurant_id" : 1,"name":1,"address":1})
+//Same as previous 2 questiosn reasoning
+db.restaurants.find({"address.coord.0": {$lt:-65.754168},"cuisine" : {$ne: "American "},"grades.score" : {$gt: 70}},{"restaurant_id" : 1,"name":1,"address":1})
 //Question 14
 db.restaurants.aggregate([{$match: {"cuisine" : {$ne: "American "}, "grades.grade" : "A", "borough" : {$ne: "Brooklyn"} } }]).sort({"cuisine":-1})
 //Question 15
@@ -76,13 +86,13 @@ db.output.find().skip(db.output.find().count()/2).limit(1)
 //Question 2
 //Used 2dsphere to get the coordinates in order
 db.foreclosures.createIndex( { geometry : "2dsphere" } )
-//Had to switch the positions because MongoDB and the data had it with longitude first
+//Had to switch the positions because MongoDB and the data had it with longitude first, can switch that back if I understood that incorrectly
 db.foreclosures.find({geometry:{$geoWithin: { $centerSphere: [ [ -78.9779035, 35.9618939 ], 10/3958.8 ] } }})
 db.foreclosures.find({geometry:{$geoWithin: { $centerSphere: [ [ -78.9779035, 35.9618939 ], 10/3958.8 ] } }}).count()
 
 
 //Extra Credit
-//Cleaning up the worldcities file, had to switch lat and long
+//Cleaning up the worldcities file, had to switch lat and long, can switch it back if I understood that incorrectly
 db.cities.find().forEach(function(x) { db.newcities.insert({"_id":x._id,"city":x.city,"city_ascii":x.city_ascii,"loc":{"type":"Point","coordinates":[x.lng,x.lat]},"country":x.country,"capital":x.capital,"id":x.id})})
 //Making the datetime in readable format
 db.meteorites.aggregate([{ $addFields: { date: { $toDate: "$year" } } },{$out:"output2"}])
