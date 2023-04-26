@@ -1,0 +1,5 @@
+I have a screenshot of dataproc with a directory in HDFS of ap5254-bs23/hw1.2/input data.
+I also have 2 fodlers of the code to get the unigram count and bigram count, with the respecie mapper adn redcuer in it as well as the respective output files in the folder as well.
+I didn't fully complete the asignment as I couldn't get the conditional probability (example: P(the word)/P(the) but I could get the probability of a word appeating and of two words appearing but couldn't get the probability of a word appreaing based on the word before.
+I was switching between dataproc and AWS for this so this is the code I uised for dataproc: mapred streaming -input ap5254-bd23/hw1.2 -output demo -file mapper.py -file reducer.py  -mapper "python mapper.py" -reducer "python reducer.py"
+This is the one for AWS: hadoop-streaming -files s3://test-bd23-ap/mapper.py,s3://test-bd23-ap/reducer.py -mapper "python mapper.py" -reducer "python reducer.py" -input s3://test-bd23-ap/hw1 -output s3://test-bd23-ap/output3. You need to setup the the S3 bucket correctly for this.
